@@ -29,8 +29,8 @@ namespace CameraHandler{
         config.pixel_format = PIXFORMAT_JPEG;
 
         if (psramFound()){
-            Serial.println("Found psram, setting the UXGA image quality");
-            config.frame_size = FRAMESIZE_240X240;
+            Serial.println("Found psram, setting the 176x144 image quality");
+            config.frame_size = FRAMESIZE_QCIF;
             config.jpeg_quality = 10;
             config.fb_count = 2;
         }else{
@@ -43,6 +43,7 @@ namespace CameraHandler{
         esp_err_t  err = esp_camera_init(&config);
 
         camera_sensor = esp_camera_sensor_get();
+        camera_sensor->set_special_effect(camera_sensor, 2);
 
         if (err != ESP_OK){
             Serial.printf("Camera initialization failed with error: 0x%x \r\n", err);
