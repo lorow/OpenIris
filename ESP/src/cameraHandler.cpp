@@ -24,21 +24,9 @@ int OpenIris::CameraHandler::setupCamera()
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
-
-  if (psramFound())
-  {
-    Serial.println("Found psram, setting the 176x144 image quality");
-    config.frame_size = FRAMESIZE_QCIF;
-    config.jpeg_quality = 10;
-    config.fb_count = 2;
-  }
-  else
-  {
-    Serial.println("Did not find psram, setting svga quality");
-    config.frame_size = FRAMESIZE_SVGA;
-    config.jpeg_quality = 12;
-    config.fb_count = 1;
-  }
+  config.frame_size = FRAMESIZE_240X240;
+  config.jpeg_quality = 12;
+  config.fb_count = 2;
 
   esp_err_t err = esp_camera_init(&config);
 

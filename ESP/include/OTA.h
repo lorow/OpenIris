@@ -1,5 +1,6 @@
 #pragma once
 #include <ArduinoOTA.h>
+#include <HTTPClient.h>
 
 namespace OpenIris
 {
