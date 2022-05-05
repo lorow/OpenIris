@@ -7,6 +7,7 @@
 #include "LEDManager.h"
 #include "webServer/webserverHandler.h"
 #include "OTA.h"
+#include "storage.h"
 #include "StateManager.h"
 
 char *MDSNTrackerName = "OpenIrisTracker";
@@ -17,6 +18,7 @@ auto ledManager = OpenIris::LEDManager(33);
 auto cameraHandler = OpenIris::CameraHandler();
 auto stateManager = OpenIris::StateManager();
 auto httpdHandler = OpenIris::HTTPDHandler();
+auto trackerConfig = OpenIris::Configuration("config.json");
 
 void setup()
 {

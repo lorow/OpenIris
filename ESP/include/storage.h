@@ -1,43 +1,59 @@
+#pragma once
 #include "ArduinoJson.h"
+#include <string>
 
-#define CONFIG_SIZE 256
+#define DEBUG_CONFIG true
+
+#define DESERIALIZE_CONFIG_SIZE 768
+#define SERIALIZE_CONFIG_SIZE 768
 
 namespace OpenIris
 {
   struct Config
   {
+    struct Device
+    {
+      std::string name = "";
+    };
+
     struct Camera
     {
+      // default values to be used by the camera
+      // in case of cropping, we shouldn't be setting
       int vflip = 0;
-      int framesize = 0;
+      int framesize = 3;
       int href = 0;
-      int pointX = 0;
-      int pointY = 0;
-      int outputX = 0;
-      int outputY = 0;
-      int quality = 0;
+      int pointX = -1;
+      int pointY = -1;
+      int outputX = -1;
+      int outputY = -1;
+      int quality = 12;
     };
 
     struct WiFiConfig
     {
-      char ssid;
-      char password;
+      std::string ssid = "";
+      std::string password = "";
     };
 
+    Device device;
     Camera camera;
-    std::vector<WiFiConfig> networks;
+    WiFiConfig networks[2];
   };
 
   class Configuration
   {
   public:
+    Configuration(char *fileName);
     void setup();
     Config *getConfig();
     void save();
     void reset();
 
   private:
-    void loadConfig(StaticJsonDocument<CONFIG_SIZE> &config_doc);
+    char *configFileName;
+    Config config;
+    void loadConfig();
     bool already_loaded = false;
   };
 }
