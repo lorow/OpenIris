@@ -1,41 +1,44 @@
 #include "WifiHandler.h"
 #include "GlobalVars.h"
 
-void OpenIris::WiFiHandler::setupWifi(const char *ssid, const char *password)
+void OpenIris::WiFiHandler::setupWifi()
 {
   Serial.println("Initializing connection to wifi");
 
-  WiFi.begin(ssid, password);
+  std::vector<WiFiConfig> *networks = trackerConfig.getWifiConfigs();
+  int connectionTimeout = 3000;
 
-  Serial.print("connecting");
-  int time_spent_connecting = 0;
-  int connection_timeout = 6400;
-  int wifi_status = WiFi.status();
-
-  while (time_spent_connecting < connection_timeout || wifi_status != WL_CONNECTED)
+  for (auto it = networks->begin(); it != networks->end(); ++it)
   {
-    wifi_status = WiFi.status();
-    Serial.print(".");
-    stateManager.setState(OpenIris::State::ConnectingToWifi);
-    time_spent_connecting += 1600;
-    delay(1600);
+    Serial.printf("Trying to connect using %s\n\r", it->ssid);
+
+    int timeSpentConnecting = 0;
+    WiFi.begin(it->ssid, it->password);
+
+    while (timeSpentConnecting < connectionTimeout && !WiFi.isConnected())
+    {
+      Serial.print(".");
+      timeSpentConnecting += 300;
+      delay(300);
+    }
+
+    if (!WiFi.isConnected())
+      Serial.printf("\n\rCould not connect to %s, trying another network\n\r", it->ssid);
+    else
+    {
+      Serial.printf("\n\rSuccessfully connected to %s\n\r", it->ssid);
+      stateManager.setState(OpenIris::State::ConnectingToWifiSuccess);
+      Serial.print("WiFi connected");
+      Serial.print("ESP will be streaming under 'http://");
+      Serial.print(WiFi.localIP());
+      Serial.print(":80/\r\n");
+      Serial.print("ESP will be accepting commands under 'http://");
+      Serial.print(WiFi.localIP());
+      Serial.print(":80/control\r\n");
+      return;
+    }
   }
 
-  if (wifi_status == WL_CONNECTED)
-  {
-    stateManager.setState(OpenIris::State::ConnectingToWifiSuccess);
-    delay(1600);
-    Serial.print("\n\rWiFi connected\n\r");
-    Serial.print("ESP will be streaming under 'http://");
-    Serial.print(WiFi.localIP());
-    Serial.print(":80/\r\n");
-    Serial.print("ESP will be accepting commands under 'http://");
-    Serial.print(WiFi.localIP());
-    Serial.print(":80/control\r\n");
-  }
-  else
-  {
-    stateManager.setState(OpenIris::State::ConnectingToWifiError);
-    return;
-  }
+  Serial.println("Could not connected to any of the specified networks, check the configuration and try again");
+  stateManager.setState(OpenIris::State::ConnectingToWifiSuccess);
 }

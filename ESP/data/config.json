@@ -1,0 +1,31 @@
+{
+  "device": {
+    "name": "OpenIrisTracker",
+    "OTAPassword": "",
+    "OTAPort": ""
+  },
+  "camera": {
+    "vflip": 0,
+    "framesize": 2,
+    "href": 0,
+    "pointX": 0,
+    "pointY": 0,
+    "outputX": 0,
+    "outputY": 0,
+    "quality": 12
+  },
+  "wifi": {
+    "main": {
+      "ssid": "",
+      "pass": ""
+    },
+    "backup1": {
+      "ssid": "",
+      "pass": ""
+    },
+    "backup2": {
+      "ssid": "",
+      "pass": ""
+    }
+  }
+}

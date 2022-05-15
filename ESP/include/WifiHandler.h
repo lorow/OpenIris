@@ -6,6 +6,6 @@ namespace OpenIris
 {
   namespace WiFiHandler
   {
-    void setupWifi(const char *ssid, const char *password);
+    void setupWifi();
   }
 }

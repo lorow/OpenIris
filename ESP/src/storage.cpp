@@ -2,13 +2,12 @@
 #include "storage.h"
 #define LittleFS LITTLEFS
 
-OpenIris::Configuration::Configuration(char *fileName)
+void OpenIris::Configuration::setup(const char *fileName)
 {
-  this->configFileName = strcat("/", fileName);
-}
+  Serial.print("Using configuration from: ");
+  Serial.print(this->configFileName);
+  Serial.println();
 
-void OpenIris::Configuration::setup()
-{
   // TODO add statuses
   if (already_loaded)
     return;
@@ -31,7 +30,10 @@ void OpenIris::Configuration::setup()
       Serial.println("Could not mount the file system after formatting, ABORTING");
       return;
     }
+    else
+      Serial.println("Successfully formatted the file system");
   }
+  Serial.println("File system mounted");
 }
 
 void OpenIris::Configuration::loadConfig()
@@ -41,40 +43,59 @@ void OpenIris::Configuration::loadConfig()
     Serial.print("Config file doesn't exist, default values will be used");
     return;
   }
+  else
+    Serial.println("Config found, loading it");
 
   File configFile = LittleFS.open(this->configFileName, "r");
+  if (!configFile)
+    Serial.println("Could not open config file, defaults will be used");
+
   StaticJsonDocument<DESERIALIZE_CONFIG_SIZE> config_doc;
 
   configFile.seek(0);
   DeserializationError error = deserializeJson(config_doc, configFile);
-  configFile.close();
 
   if (error)
   {
-    Serial.println("Failed at parsing the configuration file");
+    Serial.println("Failed at parsing the configuration file, defaults will be used");
     Serial.println(error.c_str());
-    return;
   }
 
-  config.device.name = config_doc["device"]["name"].as<std::string>();
-
-  config.camera.vflip = config_doc["camera"]["vlip"];
-  config.camera.href = config_doc["camera"]["href"];
-  config.camera.pointX = config_doc["camera"]["pointX"];
-  config.camera.pointY = config_doc["camera"]["pointY"];
-  config.camera.outputX = config_doc["camera"]["outputX"];
-  config.camera.outputY = config_doc["camera"]["outputY"];
-  config.camera.quality = config_doc["camera"]["quality"];
-
-  JsonArray WifiArray = config_doc["WifiConfig"].as<JsonArray>();
-
-  for (int i = 0; i < WifiArray.size(); ++i)
+  configFile.seek(0);
+  while (configFile.available())
   {
-    config.networks[i].ssid = WifiArray[i]["ssid"].as<std::string>();
-    config.networks[i].password = WifiArray[i]["password"].as<std::string>();
+    Serial.write(configFile.read());
+  }
+
+  strlcpy(this->config.device.name, config_doc["device"]["name"], sizeof(this->config.device));
+  strlcpy(this->config.device.OTAPassword, config_doc["device"]["OTAPassword"], sizeof(this->config.device.OTAPassword));
+  this->config.device.OTAPort = config_doc["device"]["OTAPort"];
+
+  this->config.camera.vflip = config_doc["camera"]["vlip"];
+  this->config.camera.href = config_doc["camera"]["href"];
+  this->config.camera.pointX = config_doc["camera"]["pointX"];
+  this->config.camera.pointY = config_doc["camera"]["pointY"];
+  this->config.camera.outputX = config_doc["camera"]["outputX"];
+  this->config.camera.outputY = config_doc["camera"]["outputY"];
+  this->config.camera.quality = config_doc["camera"]["quality"];
+
+  for (JsonPair wifi_item : config_doc["wifi"].as<JsonObject>())
+  {
+    const char *ssid = wifi_item.value()["ssid"];
+    const char *pass = wifi_item.value()["pass"];
+    // in order to reduce memory footprint we will skip loading empty networks
+    if (strcmp(ssid, (char *)"") != 0 || strcmp(pass, (char *)"") != 0)
+    {
+      WiFiConfig network = WiFiConfig();
+
+      strlcpy(network.ssid, ssid, sizeof(network.ssid));
+      strlcpy(network.password, pass, sizeof(network.password));
+      this->config.networks.push_back(network);
+    }
   }
 
   already_loaded = true;
+  configFile.close();
 }
 
 void OpenIris::Configuration::save()
@@ -101,13 +122,21 @@ void OpenIris::Configuration::save()
 
   JsonObject wifi = configurationDoc.createNestedObject("wifi");
 
-  JsonObject wifi_backup1 = wifi.createNestedObject("backup1");
-  wifi_backup1["ssid"] = this->config.networks[0].ssid;
-  wifi_backup1["pass"] = this->config.networks[0].password;
+  char *main_field = (char *)"main";
+  char *backup_field = (char *)"backup";
+  char *field_name = nullptr;
 
-  JsonObject wifi_backup2 = wifi.createNestedObject("backup2");
-  wifi_backup2["ssid"] = this->config.networks[1].ssid;
-  wifi_backup2["pass"] = this->config.networks[1].ssid;
+  for (uint8_t i = 0; i < this->config.networks.size(); ++i)
+  {
+    if (i == 0)
+      field_name = main_field;
+    else
+      sprintf(field_name, "%s%d", backup_field, i);
+
+    JsonObject network_config = wifi.createNestedObject(field_name);
+    network_config["ssid"] = this->config.networks[i].ssid;
+    network_config["pass"] = this->config.networks[i].password;
+  }
 
   if (serializeJson(configurationDoc, configFile) == 0)
   {
@@ -119,4 +148,19 @@ void OpenIris::Configuration::save()
 void OpenIris::Configuration::reset()
 {
   LittleFS.format();
+}
+
+OpenIris::DeviceConfig *OpenIris::Configuration::getDeviceConfig()
+{
+  return &this->config.device;
+}
+
+OpenIris::CameraConfig *OpenIris::Configuration::getCameraConfig()
+{
+  return &this->config.camera;
+}
+
+std::vector<OpenIris::WiFiConfig> *OpenIris::Configuration::getWifiConfigs()
+{
+  return &this->config.networks;
 }
