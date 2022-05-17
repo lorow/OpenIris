@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include "pinout.h"
-#include "credentials.h"
 #include "WifiHandler.h"
 #include "MDNSManager.h"
 #include "cameraHandler.h"
@@ -10,7 +9,6 @@
 #include "storage.h"
 #include "StateManager.h"
 
-char *MDSNTrackerName = (char *)"OpenIrisTracker";
 int STREAM_SERVER_PORT = 80;
 
 auto ota = OpenIris::OTA();
@@ -29,12 +27,11 @@ void setup()
   trackerConfig.loadConfig();
   ledManager.setupLED();
   cameraHandler.setupCamera();
-  OpenIris::WiFiHandler::setupWifi();
-  OpenIris::MDNSHandler::setupMDNS();
+  OpenIris::WiFiHandler::setupWifi(stateManager, trackerConfig);
+  OpenIris::MDNSHandler::setupMDNS(stateManager, trackerConfig);
   httpdHandler.startStreamServer();
   ledManager.on();
-
-  ota.SetupOTA(OTAPassword, OTAServerPort);
+  ota.SetupOTA(trackerConfig);
 }
 
 void loop()

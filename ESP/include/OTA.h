@@ -1,4 +1,5 @@
 #pragma once
+#include "storage.h"
 #include <ArduinoOTA.h>
 #include <HTTPClient.h>
 
@@ -11,16 +12,17 @@ namespace OpenIris
     bool isOtaEnabled = true;
 
   public:
-    void SetupOTA(const char *OTAPassword, uint16_t OTAServerPort)
+    void SetupOTA(OpenIris::Configuration trackerConfig)
     {
       Serial.println("Setting up OTA updates");
+      auto deviceConfig = trackerConfig.getDeviceConfig();
 
-      if (OTAPassword == nullptr)
+      if (strcmp(deviceConfig->OTAPassword, "") == 0)
       {
         Serial.println("THE PASSWORD IS REQUIRED, [[ABORTING]]");
         return;
       }
-      ArduinoOTA.setPort(OTAServerPort);
+      ArduinoOTA.setPort(deviceConfig->OTAPort);
 
       ArduinoOTA
           .onStart([]()
@@ -42,6 +44,7 @@ namespace OpenIris
                 else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
                 else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
                 else if (error == OTA_END_ERROR) Serial.println("End Failed"); });
+
       Serial.println("Starting up basic OTA server");
       Serial.println("OTA will be live for 30s, after which it will be disabled until restart");
       ArduinoOTA.begin();

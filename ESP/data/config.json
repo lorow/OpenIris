@@ -2,7 +2,7 @@
   "device": {
     "name": "OpenIrisTracker",
     "OTAPassword": "",
-    "OTAPort": ""
+    "OTAPort": 3232
   },
   "camera": {
     "vflip": 0,

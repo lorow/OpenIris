@@ -1,9 +1,9 @@
 #include "MDNSManager.h"
-#include "GlobalVars.h"
 
-void OpenIris::MDNSHandler::setupMDNS()
+void OpenIris::MDNSHandler::setupMDNS(OpenIris::StateManager stateManager, OpenIris::Configuration trackerConfig)
 {
-  if (MDNS.begin(MDSNTrackerName))
+  auto deviceConfig = trackerConfig.getDeviceConfig();
+  if (MDNS.begin(deviceConfig->name))
   {
     stateManager.setState(OpenIris::State::MDNSSuccess);
     MDNS.addService("openIrisTracker", "tcp", 80);
