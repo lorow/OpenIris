@@ -1,5 +1,6 @@
 #pragma once
 #include "ArduinoJson.h"
+#include "observator.h"
 #include <string>
 
 #define DEBUG_CONFIG true
@@ -40,7 +41,7 @@ namespace OpenIris
     std::vector<WiFiConfig> networks;
   };
 
-  class Configuration
+  class Configuration : public ISubject
   {
   public:
     void setup(const char *fileName);

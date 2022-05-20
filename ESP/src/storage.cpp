@@ -143,6 +143,7 @@ void OpenIris::Configuration::save()
     Serial.println("Failed to save the config to the json file");
   }
   configFile.close();
+  this->notify();
 }
 
 void OpenIris::Configuration::reset()

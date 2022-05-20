@@ -1,11 +1,12 @@
 #pragma once
 #include "pinout.h"
+#include "observator.h"
 #include "esp_camera.h"
 #include <Arduino.h>
 
 namespace OpenIris
 {
-    class CameraHandler
+    class CameraHandler : public IObserver
     {
     private:
         sensor_t *camera_sensor;
@@ -17,5 +18,6 @@ namespace OpenIris
         int setVFlip(int direction);
         int setHFlip(int direction);
         int setVieWindow(int offsetX, int offsetY, int outputX, int outputY);
+        void update();
     };
 }
