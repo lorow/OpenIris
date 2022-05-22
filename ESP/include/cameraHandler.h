@@ -1,6 +1,6 @@
 #pragma once
 #include "pinout.h"
-#include "observator.h"
+#include "observer.h"
 #include "esp_camera.h"
 #include <Arduino.h>
 
@@ -18,6 +18,6 @@ namespace OpenIris
         int setVFlip(int direction);
         int setHFlip(int direction);
         int setVieWindow(int offsetX, int offsetY, int outputX, int outputY);
-        void update();
+        void update(ObserverEvent::Event event);
     };
 }

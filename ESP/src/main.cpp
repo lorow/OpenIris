@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include "observator.h"
 #include "pinout.h"
 #include "WifiHandler.h"
 #include "MDNSManager.h"
@@ -26,7 +25,7 @@ void setup()
   Serial.println();
   ledManager.setupLED();
 
-  trackerConfig.setup("config.json");
+  trackerConfig.setup("/config.json");
   trackerConfig.loadConfig();
   trackerConfig.attach(cameraHandler);
 

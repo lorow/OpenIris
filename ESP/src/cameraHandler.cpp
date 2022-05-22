@@ -47,6 +47,11 @@ int OpenIris::CameraHandler::setupCamera()
   }
 }
 
+void OpenIris::CameraHandler::update(ObserverEvent::Event event)
+{
+  // TODO update the configuration
+}
+
 int OpenIris::CameraHandler::setCameraResolution(framesize_t frameSize)
 {
   if (camera_sensor->pixformat == PIXFORMAT_JPEG)

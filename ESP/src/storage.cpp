@@ -1,9 +1,9 @@
-#include <LITTLEFS.h>
 #include "storage.h"
-#define LittleFS LITTLEFS
 
 void OpenIris::Configuration::setup(const char *fileName)
 {
+  strlcpy(this->configFileName, fileName, sizeof(this->configFileName));
+
   Serial.print("Using configuration from: ");
   Serial.print(this->configFileName);
   Serial.println();
@@ -40,7 +40,7 @@ void OpenIris::Configuration::loadConfig()
 {
   if (!LittleFS.exists(this->configFileName))
   {
-    Serial.print("Config file doesn't exist, default values will be used");
+    Serial.print("Config file doesn't exist, exiting");
     return;
   }
   else
@@ -48,7 +48,7 @@ void OpenIris::Configuration::loadConfig()
 
   File configFile = LittleFS.open(this->configFileName, "r");
   if (!configFile)
-    Serial.println("Could not open config file, defaults will be used");
+    Serial.println("Could not open config file, default values will be used");
 
   StaticJsonDocument<DESERIALIZE_CONFIG_SIZE> config_doc;
 
@@ -61,23 +61,18 @@ void OpenIris::Configuration::loadConfig()
     Serial.println(error.c_str());
   }
 
+#ifdef DEBUG_CONFIG
   configFile.seek(0);
   while (configFile.available())
   {
     Serial.write(configFile.read());
   }
+#endif
 
-  strlcpy(this->config.device.name, config_doc["device"]["name"], sizeof(this->config.device));
-  strlcpy(this->config.device.OTAPassword, config_doc["device"]["OTAPassword"], sizeof(this->config.device.OTAPassword));
-  this->config.device.OTAPort = config_doc["device"]["OTAPort"];
-
-  this->config.camera.vflip = config_doc["camera"]["vlip"];
-  this->config.camera.href = config_doc["camera"]["href"];
-  this->config.camera.pointX = config_doc["camera"]["pointX"];
-  this->config.camera.pointY = config_doc["camera"]["pointY"];
-  this->config.camera.outputX = config_doc["camera"]["outputX"];
-  this->config.camera.outputY = config_doc["camera"]["outputY"];
-  this->config.camera.quality = config_doc["camera"]["quality"];
+  JsonObject deviceConfig = config_doc["device"].as<JsonObject>();
+  JsonObject cameraConfig = config_doc["camera"].as<JsonObject>();
+  this->updateDeviceConfig(deviceConfig, false);
+  this->updateCameraConfig(cameraConfig, false);
 
   for (JsonPair wifi_item : config_doc["wifi"].as<JsonObject>())
   {
@@ -87,7 +82,7 @@ void OpenIris::Configuration::loadConfig()
     if (strcmp(ssid, (char *)"") != 0 || strcmp(pass, (char *)"") != 0)
     {
       WiFiConfig network = WiFiConfig();
-
+      strlcpy(network.name, wifi_item.key().c_str(), sizeof(network.name));
       strlcpy(network.ssid, ssid, sizeof(network.ssid));
       strlcpy(network.password, pass, sizeof(network.password));
       this->config.networks.push_back(network);
@@ -96,6 +91,7 @@ void OpenIris::Configuration::loadConfig()
 
   already_loaded = true;
   configFile.close();
+  this->notify(OpenIris::ObserverEvent::configLoaded);
 }
 
 void OpenIris::Configuration::save()
@@ -109,6 +105,8 @@ void OpenIris::Configuration::save()
   StaticJsonDocument<SERIALIZE_CONFIG_SIZE> configurationDoc;
 
   configurationDoc["device"]["name"] = this->config.device.name;
+  configurationDoc["device"]["OTAPassword"] = this->config.device.OTAPassword;
+  configurationDoc["device"]["OTAPort"] = this->config.device.OTAPort;
 
   JsonObject camera = configurationDoc.createNestedObject("camera");
   camera["vflip"] = this->config.camera.vflip;
@@ -122,18 +120,9 @@ void OpenIris::Configuration::save()
 
   JsonObject wifi = configurationDoc.createNestedObject("wifi");
 
-  char *main_field = (char *)"main";
-  char *backup_field = (char *)"backup";
-  char *field_name = nullptr;
-
   for (uint8_t i = 0; i < this->config.networks.size(); ++i)
   {
-    if (i == 0)
-      field_name = main_field;
-    else
-      sprintf(field_name, "%s%d", backup_field, i);
-
-    JsonObject network_config = wifi.createNestedObject(field_name);
+    JsonObject network_config = wifi.createNestedObject(this->config.networks[i].name);
     network_config["ssid"] = this->config.networks[i].ssid;
     network_config["pass"] = this->config.networks[i].password;
   }
@@ -143,25 +132,46 @@ void OpenIris::Configuration::save()
     Serial.println("Failed to save the config to the json file");
   }
   configFile.close();
-  this->notify();
 }
 
-void OpenIris::Configuration::reset()
+void OpenIris::Configuration::updateDeviceConfig(JsonObject &deviceConfig, bool shouldNotify)
 {
-  LittleFS.format();
+  strlcpy(this->config.device.name, deviceConfig["name"], sizeof(this->config.device));
+  strlcpy(this->config.device.OTAPassword, deviceConfig["OTAPassword"], sizeof(this->config.device.OTAPassword));
+  this->config.device.OTAPort = deviceConfig["OTAPort"];
+  if (shouldNotify)
+    this->notify(OpenIris::ObserverEvent::deviceConfigUpdated);
 }
 
-OpenIris::DeviceConfig *OpenIris::Configuration::getDeviceConfig()
+void OpenIris::Configuration::updateCameraConfig(JsonObject &cameraConfig, bool shouldNotify)
 {
-  return &this->config.device;
+  this->config.camera.framesize = cameraConfig["framesize"];
+  this->config.camera.vflip = cameraConfig["vlip"];
+  this->config.camera.href = cameraConfig["href"];
+  this->config.camera.pointX = cameraConfig["pointX"];
+  this->config.camera.pointY = cameraConfig["pointY"];
+  this->config.camera.outputX = cameraConfig["outputX"];
+  this->config.camera.outputY = cameraConfig["outputY"];
+  this->config.camera.quality = cameraConfig["quality"];
+  if (shouldNotify)
+    this->notify(OpenIris::ObserverEvent::cameraConfigUpdated);
 }
 
-OpenIris::CameraConfig *OpenIris::Configuration::getCameraConfig()
+void OpenIris::Configuration::updateNetwork(char *networkName, JsonObject &wifiConfig, bool shouldNotify)
 {
-  return &this->config.camera;
-}
+  WiFiConfig *networkToUpdate = nullptr;
 
-std::vector<OpenIris::WiFiConfig> *OpenIris::Configuration::getWifiConfigs()
-{
-  return &this->config.networks;
+  for (int i = 0; i < this->config.networks.size(); i++)
+  {
+    if (strcmp(this->config.networks[i].name, networkName) == 0)
+      networkToUpdate = &this->config.networks[i];
+  }
+
+  if (networkToUpdate != nullptr)
+  {
+    strlcpy(networkToUpdate->ssid, wifiConfig["ssid"], sizeof(networkToUpdate->ssid));
+    strlcpy(networkToUpdate->password, wifiConfig["ssid"], sizeof(networkToUpdate->password));
+    if (shouldNotify)
+      this->notify(OpenIris::ObserverEvent::networksConfigUpdated);
+  }
 }

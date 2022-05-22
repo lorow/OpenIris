@@ -1,8 +1,10 @@
 #pragma once
+#include <LITTLEFS.h>
 #include "ArduinoJson.h"
-#include "observator.h"
+#include "observer.h"
 #include <string>
 
+#define LittleFS LITTLEFS
 #define DEBUG_CONFIG true
 
 #define DESERIALIZE_CONFIG_SIZE 2048
@@ -31,6 +33,7 @@ namespace OpenIris
 
   struct WiFiConfig
   {
+    char name[7];
     char ssid[64];
     char password[64];
   };
@@ -47,13 +50,18 @@ namespace OpenIris
     void setup(const char *fileName);
     void loadConfig();
 
-    DeviceConfig *getDeviceConfig();
-    CameraConfig *getCameraConfig();
-    std::vector<WiFiConfig> *getWifiConfigs();
-    void save();
-    void reset();
+    DeviceConfig *getDeviceConfig() { return &this->config.device; }
+    CameraConfig *getCameraConfig() { return &this->config.camera; }
+    std::vector<WiFiConfig> *getWifiConfigs() { return &this->config.networks; }
+
+    void updateDeviceConfig(JsonObject &deviceConfig, bool shouldNotify);
+    void updateCameraConfig(JsonObject &cameraConfig, bool shouldNotify);
+    void updateNetwork(char *networkName, JsonObject &wifiConfig, bool shouldNotify);
+    void reset() { LittleFS.format(); }
 
   private:
+    void save();
+
     char configFileName[20];
     TrackerConfig config;
     bool already_loaded = false;

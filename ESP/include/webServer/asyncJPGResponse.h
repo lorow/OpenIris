@@ -79,7 +79,7 @@ namespace OpenIris
         {
           long end = millis();
           int fp = (end - lastAsyncRequest);
-          log_d("Size: %uKB, Time: %ums (%ifps)\n", _jpg_buf_len / 1024, fp, 1000 / fp);
+          log_d("Size: %uKB, Time: %ums (%ifps)\n", _jpg_buf_len / 1024, fp, 1000. / fp);
           lastAsyncRequest = end;
           if (_frame.fb->format != PIXFORMAT_JPEG)
           {
