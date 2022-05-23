@@ -4,7 +4,7 @@
 
 OpenIris::HTTPDHandler::HTTPDHandler()
 {
-  this->server = new AsyncWebServer(STREAM_SERVER_PORT);
+  this->server = new AsyncWebServer(80);
 }
 
 void OpenIris::HTTPDHandler::startStreamServer()
@@ -14,71 +14,43 @@ void OpenIris::HTTPDHandler::startStreamServer()
       HTTP_GET,
       std::bind(&OpenIris::HTTPDHandler::stream_handler, this, std::placeholders::_1));
   this->server->on(
-      "/control",
+      "/config/update",
       HTTP_GET,
-      std::bind(&OpenIris::HTTPDHandler::command_handler, this, std::placeholders::_1));
-
-  this->server->on(
-      "/crop-roi",
-      HTTP_GET,
-      std::bind(&OpenIris::HTTPDHandler::roi_crop_command_handler, this, std::placeholders::_1));
+      std::bind(&OpenIris::HTTPDHandler::config_update_handler, this, std::placeholders::_1));
 
   Serial.println("Initializing web server");
   this->server->begin();
 }
 
-void OpenIris::HTTPDHandler::roi_crop_command_handler(AsyncWebServerRequest *request)
+void OpenIris::HTTPDHandler::config_update_handler(AsyncWebServerRequest *request)
 {
-  int offsetX = 0;
-  int offsetY = 0;
-  int outputX = 0;
-  int outputY = 0;
+  AsyncWebParameter *p = request->getParam("body", true);
+  DynamicJsonDocument doc(DESERIALIZE_CONFIG_SIZE);
+  DeserializationError error = deserializeJson(doc, p->value());
 
-  if (request->hasParam("offsetX"))
+  if (error)
+    return request->send(403);
+
+  if (doc.containsKey("device"))
   {
-    AsyncWebParameter *offsetX_param = request->getParam("offsetX");
-    offsetX = atoi(offsetX_param->value().c_str());
+    JsonObject deviceConfig = doc["device"].as<JsonObject>();
+    // trackerConfig.updateDeviceConfig(deviceConfig, true);
   }
-  if (request->hasParam("offsetY"))
+  if (doc.containsKey("camera"))
   {
-    AsyncWebParameter *offsetY_param = request->getParam("offsetY");
-    offsetY = atoi(offsetY_param->value().c_str());
+    JsonObject cameraConfig = doc["camera"].as<JsonObject>();
+    // trackerConfig.updateCameraConfig(cameraConfig, true);
   }
-  if (request->hasParam("outputX"))
+  if (doc.containsKey("wifi"))
   {
-    AsyncWebParameter *outputX_param = request->getParam("outputX");
-    outputX = atoi(outputX_param->value().c_str());
-  }
-  if (request->hasParam("outputY"))
-  {
-    AsyncWebParameter *outputY_param = request->getParam("outputY");
-    outputY = atoi(outputY_param->value().c_str());
+    JsonObject wifiConfig = doc["wifi"].as<JsonObject>();
+    // trackerConfig.updateNetwork();
   }
 
-  if (offsetX != 0 && offsetY != 0 && outputX != 0 && outputY != 0)
-    cameraHandler.setVieWindow(offsetX, offsetY, outputX, outputY);
-  request->send(200);
-}
+  // save here
+  // trackerConfig.save();
 
-void OpenIris::HTTPDHandler::command_handler(AsyncWebServerRequest *request)
-{
-  if (request->hasParam("framesize"))
-  {
-    AsyncWebParameter *framesize_param = request->getParam("framesize");
-    cameraHandler.setCameraResolution((framesize_t)atoi(framesize_param->value().c_str()));
-  }
-  if (request->hasParam("hmirror"))
-  {
-    AsyncWebParameter *hmirror_param = request->getParam("hmirror");
-    cameraHandler.setHFlip(atoi(hmirror_param->value().c_str()));
-  }
-  if (request->hasParam("vflip"))
-  {
-    AsyncWebParameter *vflip_param = request->getParam("vflip");
-    cameraHandler.setVFlip(atoi(vflip_param->value().c_str()));
-  }
-
-  request->send(200);
+  return request->send(200);
 }
 
 void OpenIris::HTTPDHandler::stream_handler(AsyncWebServerRequest *request)

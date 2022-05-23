@@ -9,8 +9,6 @@
 #include "storage.h"
 #include "StateManager.h"
 
-int STREAM_SERVER_PORT = 80;
-
 auto ota = OpenIris::OTA();
 auto ledManager = OpenIris::LEDManager(33);
 auto trackerConfig = OpenIris::Configuration();
@@ -32,7 +30,9 @@ void setup()
   cameraHandler->setupCamera();
   OpenIris::WiFiHandler::setupWifi(stateManager, trackerConfig);
   OpenIris::MDNSHandler::setupMDNS(stateManager, trackerConfig);
-  httpdHandler.startStreamServer();
+  if (stateManager.getCurrentState() == OpenIris::ConnectingToWifiSuccess)
+    // THIS WILL CRASH THE ESP IF NO NETWORK IS CONNECTED< WHAT THE HELL
+    httpdHandler.startStreamServer();
   ledManager.on();
   ota.SetupOTA(trackerConfig);
 }
