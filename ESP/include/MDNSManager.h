@@ -7,6 +7,6 @@ namespace OpenIris
 {
   namespace MDNSHandler
   {
-    void setupMDNS(OpenIris::StateManager stateManager, OpenIris::Configuration trackerConfig);
+    void setupMDNS(OpenIris::StateManager *stateManager, OpenIris::Configuration *trackerConfig);
   }
 }

@@ -2,8 +2,9 @@
 #include "webServer/asyncJPGResponse.h"
 #include "webServer/webserverHandler.h"
 
-OpenIris::HTTPDHandler::HTTPDHandler()
+OpenIris::HTTPDHandler::HTTPDHandler(Configuration *TrackerConfig)
 {
+  this->trackerConfig = TrackerConfig;
   this->server = new AsyncWebServer(80);
 }
 
@@ -34,21 +35,20 @@ void OpenIris::HTTPDHandler::config_update_handler(AsyncWebServerRequest *reques
   if (doc.containsKey("device"))
   {
     JsonObject deviceConfig = doc["device"].as<JsonObject>();
-    // trackerConfig.updateDeviceConfig(deviceConfig, true);
+    this->trackerConfig->updateDeviceConfig(deviceConfig, true);
   }
   if (doc.containsKey("camera"))
   {
     JsonObject cameraConfig = doc["camera"].as<JsonObject>();
-    // trackerConfig.updateCameraConfig(cameraConfig, true);
+    this->trackerConfig->updateCameraConfig(cameraConfig, true);
   }
   if (doc.containsKey("wifi"))
   {
     JsonObject wifiConfig = doc["wifi"].as<JsonObject>();
-    // trackerConfig.updateNetwork();
+    // this->trackerConfig->updateNetwork();
   }
 
-  // save here
-  // trackerConfig.save();
+  this->trackerConfig->save();
 
   return request->send(200);
 }

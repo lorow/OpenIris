@@ -1,10 +1,10 @@
 #include "WifiHandler.h"
 
-void OpenIris::WiFiHandler::setupWifi(OpenIris::StateManager stateManager, OpenIris::Configuration trackerConfig)
+void OpenIris::WiFiHandler::setupWifi(OpenIris::StateManager *stateManager, OpenIris::Configuration *trackerConfig)
 {
   Serial.println("Initializing connection to wifi");
 
-  std::vector<WiFiConfig> *networks = trackerConfig.getWifiConfigs();
+  std::vector<WiFiConfig> *networks = trackerConfig->getWifiConfigs();
   int connectionTimeout = 3000;
 
   for (auto networkIterator = networks->begin(); networkIterator != networks->end(); ++networkIterator)
@@ -26,7 +26,7 @@ void OpenIris::WiFiHandler::setupWifi(OpenIris::StateManager stateManager, OpenI
     else
     {
       Serial.printf("\n\rSuccessfully connected to %s\n\r", networkIterator->ssid);
-      stateManager.setState(OpenIris::State::ConnectingToWifiSuccess);
+      stateManager->setState(OpenIris::State::ConnectingToWifiSuccess);
       Serial.print("ESP will be streaming under 'http://");
       Serial.print(WiFi.localIP());
       Serial.print(":80/\r\n");
@@ -38,5 +38,5 @@ void OpenIris::WiFiHandler::setupWifi(OpenIris::StateManager stateManager, OpenI
   }
 
   Serial.println("Could not connected to any of the specified networks, check the configuration and try again");
-  stateManager.setState(OpenIris::State::ConnectingToWifiSuccess);
+  stateManager->setState(OpenIris::State::ConnectingToWifiSuccess);
 }

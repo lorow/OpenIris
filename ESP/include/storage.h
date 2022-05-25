@@ -2,6 +2,7 @@
 #include <LITTLEFS.h>
 #include "ArduinoJson.h"
 #include "observer.h"
+#include <vector>
 #include <string>
 
 #define LittleFS LITTLEFS
@@ -58,10 +59,9 @@ namespace OpenIris
     void updateCameraConfig(JsonObject &cameraConfig, bool shouldNotify);
     void updateNetwork(char *networkName, JsonObject &wifiConfig, bool shouldNotify);
     void reset() { LittleFS.format(); }
-
-  private:
     void save();
 
+  private:
     char configFileName[20];
     TrackerConfig config;
     bool already_loaded = false;

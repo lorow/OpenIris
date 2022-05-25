@@ -12,10 +12,11 @@ namespace OpenIris
   private:
     void config_update_handler(AsyncWebServerRequest *request);
     void stream_handler(AsyncWebServerRequest *request);
+    Configuration *trackerConfig;
     AsyncWebServer *server;
 
   public:
-    HTTPDHandler();
+    HTTPDHandler(Configuration *TrackerConfig);
     void startStreamServer();
   };
 }

@@ -8,6 +8,6 @@ namespace OpenIris
 {
   namespace WiFiHandler
   {
-    void setupWifi(OpenIris::StateManager stateManager, OpenIris::Configuration trackerConfig);
+    void setupWifi(OpenIris::StateManager *stateManager, OpenIris::Configuration *trackerConfig);
   }
 }

@@ -78,8 +78,6 @@ namespace OpenIris
         if (index && _frame.fb)
         {
           long end = millis();
-          int fp = (end - lastAsyncRequest);
-          log_d("Size: %uKB, Time: %ums (%ifps)\n", _jpg_buf_len / 1024, fp, 1000. / fp);
           lastAsyncRequest = end;
           if (_frame.fb->format != PIXFORMAT_JPEG)
           {
@@ -107,7 +105,6 @@ namespace OpenIris
 
         if (_frame.fb->format != PIXFORMAT_JPEG)
         {
-          unsigned long st = millis();
           bool jpeg_converted = frame2jpg(_frame.fb, 80, &_jpg_buf, &_jpg_buf_len);
           if (!jpeg_converted)
           {
@@ -118,7 +115,6 @@ namespace OpenIris
             _jpg_buf = NULL;
             return 0;
           }
-          log_i("JPEG: %lums, %uB", millis() - st, _jpg_buf_len);
         }
         else
         {

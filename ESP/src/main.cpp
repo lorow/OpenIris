@@ -14,7 +14,7 @@ auto ledManager = OpenIris::LEDManager(33);
 auto trackerConfig = OpenIris::Configuration();
 OpenIris::CameraHandler *cameraHandler = new OpenIris::CameraHandler();
 auto stateManager = OpenIris::StateManager();
-auto httpdHandler = OpenIris::HTTPDHandler();
+auto httpdHandler = OpenIris::HTTPDHandler(&trackerConfig);
 
 void setup()
 {
@@ -28,8 +28,8 @@ void setup()
   trackerConfig.attach(cameraHandler);
 
   cameraHandler->setupCamera();
-  OpenIris::WiFiHandler::setupWifi(stateManager, trackerConfig);
-  OpenIris::MDNSHandler::setupMDNS(stateManager, trackerConfig);
+  OpenIris::WiFiHandler::setupWifi(&stateManager, &trackerConfig);
+  OpenIris::MDNSHandler::setupMDNS(&stateManager, &trackerConfig);
   if (stateManager.getCurrentState() == OpenIris::ConnectingToWifiSuccess)
     // THIS WILL CRASH THE ESP IF NO NETWORK IS CONNECTED< WHAT THE HELL
     httpdHandler.startStreamServer();
