@@ -12,7 +12,7 @@
 auto ota = OpenIris::OTA();
 auto ledManager = OpenIris::LEDManager(33);
 auto trackerConfig = OpenIris::Configuration();
-OpenIris::CameraHandler *cameraHandler = new OpenIris::CameraHandler();
+OpenIris::CameraHandler *cameraHandler = new OpenIris::CameraHandler(&trackerConfig);
 auto stateManager = OpenIris::StateManager();
 auto httpdHandler = OpenIris::HTTPDHandler(&trackerConfig);
 

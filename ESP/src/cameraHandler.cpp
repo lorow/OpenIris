@@ -49,7 +49,15 @@ int OpenIris::CameraHandler::setupCamera()
 
 void OpenIris::CameraHandler::update(ObserverEvent::Event event)
 {
-  // TODO update the configuration
+  if (event == OpenIris::ObserverEvent::cameraConfigUpdated)
+  {
+    OpenIris::CameraConfig *cameraConfig = trackerConfig->getCameraConfig();
+    this->setHFlip(cameraConfig->href);
+    this->setVFlip(cameraConfig->vflip);
+    this->setCameraResolution((framesize_t)cameraConfig->framesize);
+    camera_sensor->set_quality(camera_sensor, cameraConfig->quality);
+    // this->setVieWindow(cameraConfig->pointX, cameraConfig->pointY, cameraConfig->outputX, cameraConfig->outputY);
+  }
 }
 
 int OpenIris::CameraHandler::setCameraResolution(framesize_t frameSize)
