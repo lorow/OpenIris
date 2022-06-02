@@ -1,6 +1,6 @@
 #include "MDNSManager.h"
 
-void OpenIris::MDNSHandler::setupMDNS(OpenIris::StateManager *stateManager, OpenIris::Configuration *trackerConfig)
+void OpenIris::MDNSHandler::startMDNS()
 {
   auto deviceConfig = trackerConfig->getDeviceConfig();
   if (MDNS.begin(deviceConfig->name))
@@ -14,5 +14,14 @@ void OpenIris::MDNSHandler::setupMDNS(OpenIris::StateManager *stateManager, Open
   {
     stateManager->setState(OpenIris::State::MDNSError);
     Serial.println("Error initializing MDNS");
+  }
+}
+
+void OpenIris::MDNSHandler::update(ObserverEvent::Event event)
+{
+  if (event == ObserverEvent::deviceConfigUpdated)
+  {
+    MDNS.end();
+    startMDNS();
   }
 }

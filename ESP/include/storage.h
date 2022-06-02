@@ -8,7 +8,7 @@
 #define LittleFS LITTLEFS
 #define DEBUG_CONFIG true
 
-#define DESERIALIZE_CONFIG_SIZE 512
+#define DESERIALIZE_CONFIG_SIZE 1024
 #define SERIALIZE_CONFIG_SIZE 1024
 
 namespace OpenIris

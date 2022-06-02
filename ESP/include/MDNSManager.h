@@ -5,8 +5,15 @@
 
 namespace OpenIris
 {
-  namespace MDNSHandler
+  class MDNSHandler : public IObserver
   {
-    void setupMDNS(OpenIris::StateManager *stateManager, OpenIris::Configuration *trackerConfig);
-  }
+  private:
+    StateManager *stateManager;
+    Configuration *trackerConfig;
+
+  public:
+    MDNSHandler(StateManager *stateManager, Configuration *trackerConfig) : stateManager(stateManager), trackerConfig(trackerConfig) {}
+    void startMDNS();
+    void update(ObserverEvent::Event event);
+  };
 }
