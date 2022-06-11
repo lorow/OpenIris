@@ -27,12 +27,6 @@ void OpenIris::WiFiHandler::setupWifi(OpenIris::StateManager *stateManager, Open
     {
       Serial.printf("\n\rSuccessfully connected to %s\n\r", networkIterator->ssid);
       stateManager->setState(OpenIris::State::ConnectingToWifiSuccess);
-      Serial.print("ESP will be streaming under 'http://");
-      Serial.print(WiFi.localIP());
-      Serial.print(":80/\r\n");
-      Serial.print("ESP will be accepting commands under 'http://");
-      Serial.print(WiFi.localIP());
-      Serial.print(":80/control\r\n");
       return;
     }
   }

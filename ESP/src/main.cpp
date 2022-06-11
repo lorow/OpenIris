@@ -31,12 +31,12 @@ void setup()
 
   cameraHandler.setupCamera();
   OpenIris::WiFiHandler::setupWifi(&stateManager, &trackerConfig);
-  mdnsHandler.startMDNS();
 
   if (stateManager.getCurrentState() == OpenIris::ConnectingToWifiSuccess)
     // THIS WILL CRASH THE ESP IF NO NETWORK IS CONNECTED< WHAT THE HELL
     httpdHandler.startStreamServer();
 
+  mdnsHandler.startMDNS();
   ledManager.on();
   ota.SetupOTA(trackerConfig);
 }

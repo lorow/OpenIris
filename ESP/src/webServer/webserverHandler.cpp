@@ -5,7 +5,7 @@
 OpenIris::HTTPDHandler::HTTPDHandler(Configuration *TrackerConfig)
 {
   this->trackerConfig = TrackerConfig;
-  this->server = new AsyncWebServer(80);
+  this->server = new AsyncWebServer(2137);
 }
 
 void OpenIris::HTTPDHandler::startStreamServer()
@@ -21,6 +21,12 @@ void OpenIris::HTTPDHandler::startStreamServer()
 
   Serial.println("Initializing web server");
   this->server->begin();
+  Serial.print("ESP will be streaming under 'http://");
+  Serial.print(WiFi.localIP());
+  Serial.print(":80/\r\n");
+  Serial.print("ESP will be accepting commands under 'http://");
+  Serial.print(WiFi.localIP());
+  Serial.print(":80/control\r\n");
 }
 
 void OpenIris::HTTPDHandler::config_update_handler(AsyncWebServerRequest *request)
@@ -55,6 +61,7 @@ void OpenIris::HTTPDHandler::config_update_handler(AsyncWebServerRequest *reques
 
 void OpenIris::HTTPDHandler::stream_handler(AsyncWebServerRequest *request)
 {
+  Serial.println("Streaming video");
   OpenIris::AsyncJpegStreamResponse *response = new OpenIris::AsyncJpegStreamResponse();
   if (!response)
   {
