@@ -20,7 +20,6 @@ namespace OpenIris
         int setCameraResolution(framesize_t frameSize);
         int setVFlip(int direction);
         int setHFlip(int direction);
-        int setVieWindow(int offsetX, int offsetY, int outputX, int outputY);
         void update(ObserverEvent::Event event);
     };
 }

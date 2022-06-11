@@ -112,10 +112,6 @@ void OpenIris::Configuration::save()
   camera["vflip"] = this->config.camera.vflip;
   camera["framesize"] = this->config.camera.framesize;
   camera["href"] = this->config.camera.href;
-  camera["pointX"] = this->config.camera.pointX;
-  camera["pointY"] = this->config.camera.pointY;
-  camera["outputX"] = this->config.camera.outputX;
-  camera["outputY"] = this->config.camera.outputY;
   camera["quality"] = this->config.camera.quality;
 
   JsonObject wifi = configurationDoc.createNestedObject("wifi");
@@ -148,10 +144,6 @@ void OpenIris::Configuration::updateCameraConfig(JsonObject &cameraConfig, bool 
   this->config.camera.framesize = cameraConfig["framesize"];
   this->config.camera.vflip = cameraConfig["vlip"];
   this->config.camera.href = cameraConfig["href"];
-  this->config.camera.pointX = cameraConfig["pointX"];
-  this->config.camera.pointY = cameraConfig["pointY"];
-  this->config.camera.outputX = cameraConfig["outputX"];
-  this->config.camera.outputY = cameraConfig["outputY"];
   this->config.camera.quality = cameraConfig["quality"];
   if (shouldNotify)
     this->notify(OpenIris::ObserverEvent::cameraConfigUpdated);

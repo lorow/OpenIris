@@ -56,7 +56,6 @@ void OpenIris::CameraHandler::update(ObserverEvent::Event event)
     this->setVFlip(cameraConfig->vflip);
     this->setCameraResolution((framesize_t)cameraConfig->framesize);
     camera_sensor->set_quality(camera_sensor, cameraConfig->quality);
-    // this->setVieWindow(cameraConfig->pointX, cameraConfig->pointY, cameraConfig->outputX, cameraConfig->outputY);
   }
 }
 
@@ -85,15 +84,4 @@ int OpenIris::CameraHandler::setVFlip(int direction)
 int OpenIris::CameraHandler::setHFlip(int direction)
 {
   return camera_sensor->set_hmirror(camera_sensor, direction);
-}
-
-int OpenIris::CameraHandler::setVieWindow(int offsetX, int offsetY, int outputX, int outputY)
-{
-  // we're only providing these parameters as these are the only ones that actually affect the ov2640
-  // TODO: if we're going to support different sensors - this will have to be moved to per-sensor implementation 'cause
-  // TODO: manufacturers handle it differently each time
-
-  // we're doubling the totalX and totalY parameters to make it easier for end user to adjust the eye ROI
-  // it also seems to produce a cleaner image
-  return camera_sensor->set_res_raw(camera_sensor, 0, 0, 0, 0, offsetX, offsetY, outputX * 2, outputY * 2, outputX, outputY, true, true);
 }

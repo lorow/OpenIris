@@ -25,10 +25,6 @@ namespace OpenIris
     int vflip = 0;
     int framesize = 0;
     int href = 0;
-    int pointX = 0;
-    int pointY = 0;
-    int outputX = 0;
-    int outputY = 0;
     int quality = 0;
   };
 
